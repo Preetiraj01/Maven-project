@@ -2,30 +2,41 @@ trigger:
 - main
  
 pool:
-  name: 'p123'   # Name of your self-hosted agent pool
+  name: 'p123'
  
 steps:
  
 # Step 1: Build Maven Project
-- task: Maven@3
+- task: Maven@4
   inputs:
     mavenPomFile: 'pom.xml'
-    goals: 'package'
+    goals: 'clean package'
  
 # Step 2: Simulate Deployment
-- script: |
-    echo "Simulating deployment..."
+- powershell: |
+    Write-Host "Simulating deployment..."
  
-    mkdir deployed
+    New-Item -ItemType Directory -Force -Path deployed
  
-    copy target\*.jar deployed\
+    Copy-Item "target\*.jar" -Destination deployed
  
-    echo "Deployment successful!"
+    Write-Host "Deployment successful!"
   displayName: 'Simulate Deployment'
  
-# Step 3: Verify Deployment Output
-- script: |
-    echo "Contents of deployed folder:"
+# Step 3: Verify Deployment
+- powershell: |
+    Write-Host "Contents of deployed folder..."
  
-    dir deployed
+    Get-ChildItem deployed
   displayName: 'Verify Deployment Output'
+ 
+# Step 4: Run Application
+- powershell: |
+    Write-Host "Running the JAR file..."
+ 
+    $jar = Get-ChildItem deployed\*.jar
+ 
+    java -jar $jar.FullName
+ 
+    Write-Host "Execution completed!"
+  displayName: 'Run Application'
