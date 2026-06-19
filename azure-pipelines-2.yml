@@ -1,0 +1,42 @@
+trigger:
+- main
+ 
+pool:
+  name: 'pp123'
+ 
+steps:
+ 
+# Step 1: Build Maven Project
+- task: Maven@4
+  inputs:
+    mavenPomFile: 'pom.xml'
+    goals: 'clean package'
+ 
+# Step 2: Simulate Deployment
+- powershell: |
+    Write-Host "Simulating deployment..."
+ 
+    New-Item -ItemType Directory -Force -Path deployed
+ 
+    Copy-Item "target\*.jar" -Destination deployed
+ 
+    Write-Host "Deployment successful!"
+  displayName: 'Simulate Deployment'
+ 
+# Step 3: Verify Deployment
+- powershell: |
+    Write-Host "Contents of deployed folder..."
+ 
+    Get-ChildItem deployed
+  displayName: 'Verify Deployment Output'
+ 
+# Step 4: Run Application
+- powershell: |
+    Write-Host "Running the JAR file..."
+ 
+    $jar = Get-ChildItem deployed\*.jar
+ 
+    java -jar $jar.FullName
+ 
+    Write-Host "Execution completed!"
+  displayName: 'Run Application'
